@@ -1,0 +1,4 @@
+/app/output
+/iac/.terraform
+.terraform.*
+terraform.tfstate*

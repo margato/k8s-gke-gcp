@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-products
+  namespace: ecommerce
+spec:
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 2
+  selector:
+    matchLabels:
+      app: api-products
+  template:
+    metadata:
+      labels:
+        app: api-products
+        domain: products
+    spec:
+      terminationGracePeriodSeconds: 3
+      containers:
+        - name: api-products
+          image: osvaldomargato/dummy-api-products:1.0.0
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "250m"
+            limits:
+              memory: "64Mi"
+              cpu: "250m"
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SHOP_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: api-products
+                  key: shop-name
+            - name: CONFIG_VERSION
+              valueFrom:
+                configMapKeyRef:
+                  name: api-products
+                  key: config-version
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 1
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 5
